@@ -1,0 +1,990 @@
+if not game:IsLoaded() then game.Loaded:Wait() end
+repeat wait() until game.Players
+repeat wait() until game.Players.LocalPlayer
+repeat wait() until game.ReplicatedStorage
+repeat wait() until game.ReplicatedStorage:FindFirstChild("Remotes");
+repeat wait() until game.Players.LocalPlayer:FindFirstChild("PlayerGui");
+repeat wait() until game.Players.LocalPlayer.PlayerGui:FindFirstChild("Main");
+repeat wait()
+until game.Players.LocalPlayer.PlayerGui.Main.ChooseTeam.Visible == true or game.Players.LocalPlayer.PlayerGui.Main.ChooseTeam.Visible == false
+
+if game.CoreGui:FindFirstChild("NewUi") then
+    game.CoreGui:FindFirstChild("NewUi"):Destroy()
+end
+
+local library = {RainbowColorValue = 0, HueSelectionPosition = 0}
+local PresetColor = Color3.fromRGB(255, 0, 0)
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+local CloseBind = Enum.KeyCode.RightControl
+
+local ScreenGui = Instance.new("ScreenGui")
+local TabButtonLayout = Instance.new("UIListLayout")
+
+ScreenGui.Name = "NewUi"
+ScreenGui.Parent = game.CoreGui
+local uitoggled = false
+UserInputService.InputBegan:Connect(function(io, p)
+    if io.KeyCode == Enum.KeyCode.RightControl then
+        if uitoggled == false then
+            ScreenGui.Enabled = false
+            uitoggled = true
+        else
+            ScreenGui.Enabled = true
+            uitoggled = false
+        end
+    end
+end)
+          
+coroutine.wrap(
+    function()
+        while wait() do
+            library.RainbowColorValue = library.RainbowColorValue + 1 / 255
+            library.HueSelectionPosition = library.HueSelectionPosition + 1
+
+            if library.RainbowColorValue >= 1 then
+                library.RainbowColorValue = 0
+            end
+
+            if library.HueSelectionPosition == 80 then
+                library.HueSelectionPosition = 0
+            end
+        end
+    end
+)()
+
+local function MakeDraggable(topbarobject, object)
+    local Dragging = nil
+    local DragInput = nil
+    local DragStart = nil
+    local StartPosition = nil
+
+    local function Update(input)
+        local Delta = input.Position - DragStart
+        local pos =
+            UDim2.new(
+                StartPosition.X.Scale,
+                StartPosition.X.Offset + Delta.X,
+                StartPosition.Y.Scale,
+                StartPosition.Y.Offset + Delta.Y
+            )
+        object.Position = pos
+    end
+
+    topbarobject.InputBegan:Connect(
+        function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                Dragging = true
+                DragStart = input.Position
+                StartPosition = object.Position
+
+                input.Changed:Connect(
+                    function()
+                        if input.UserInputState == Enum.UserInputState.End then
+                            Dragging = false
+                        end
+                    end
+                )
+            end
+        end
+    )
+
+    topbarobject.InputChanged:Connect(
+        function(input)
+            if
+                input.UserInputType == Enum.UserInputType.MouseMovement or
+                input.UserInputType == Enum.UserInputType.Touch
+            then
+                DragInput = input
+            end
+        end
+    )
+
+    UserInputService.InputChanged:Connect(
+        function(input)
+            if input == DragInput and Dragging then
+                Update(input)
+            end
+        end
+    )
+end
+
+local function RippleEffect(object)
+    spawn(function()
+        local Ripple = Instance.new("ImageLabel")
+        Ripple.Name = "Ripple"
+        Ripple.Parent = object
+        Ripple.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        Ripple.BackgroundTransparency = 1.000
+        Ripple.ZIndex = 8
+        Ripple.Image = "rbxassetid://2708891598"
+        Ripple.ImageTransparency = 0.800
+        Ripple.ScaleType = Enum.ScaleType.Fit
+        Ripple.Position = UDim2.new((Mouse.X - Ripple.AbsolutePosition.X) / object.AbsoluteSize.X, 0, (Mouse.Y - Ripple.AbsolutePosition.Y) / object.AbsoluteSize.Y, 0)
+        TweenService:Create(Ripple, TweenInfo.new(1.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2.new(-5.5, 0, -15, 0), Size = UDim2.new(12, 0, 30, 0)}):Play()
+        wait(0.75)
+        TweenService:Create(Ripple, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {ImageTransparency = 1}):Play()
+        wait(1)
+        Ripple:Destroy()
+    end)
+end
+
+function library:Window(name,game)
+    if getgenv().Theme ~= nil then
+        ColorII = getgenv().Theme.Tab.Color
+
+        ColorIII = getgenv().Theme.Line.LeftColor
+        ColorIIII = getgenv().Theme.Line.RightColor
+    
+        ColorIIIII = getgenv().Theme.Toggle.LeftColor
+        ColorIIIIII = getgenv().Theme.Toggle.RightColor
+    
+        ColorIIIIIII = getgenv().Theme.Slider.LeftColor
+        ColorIIIIIIII = getgenv().Theme.Slider.RightColor
+    else
+        ColorII = Color3.fromRGB(255, 129, 129)
+
+        ColorIII = Color3.fromRGB(255, 129, 129)
+        ColorIIII = Color3.fromRGB(255, 125, 125)
+    
+        ColorIIIII = Color3.fromRGB(255, 129, 129)
+        ColorIIIIII = Color3.fromRGB(255, 125, 125)
+    
+        ColorIIIIIII = Color3.fromRGB(255, 129, 129)
+        ColorIIIIIIII = Color3.fromRGB(255, 125, 125)
+    end
+
+    local Main = Instance.new("Frame")
+    local MainUICorner = Instance.new("UICorner")
+    local TopMain = Instance.new("Frame")
+    local TopMainUICorner = Instance.new("UICorner")
+    local TopMainLine = Instance.new("Frame")
+    local NameHub = Instance.new("TextLabel")
+    local Toggleui = Instance.new("TextLabel")
+    local HideTab = Instance.new("ImageButton")
+    local SizeFullSection = Instance.new("Frame")
+
+    Main.Name = "Main"
+    Main.Parent = ScreenGui
+    Main.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    Main.ClipsDescendants = true
+    Main.Position = UDim2.new(0.5, -325, 0.5, -175)
+    Main.Size = UDim2.new(0, 650, 0, 375)
+
+    MainUICorner.Name = "MainUICorner"
+    MainUICorner.Parent = Main
+
+    TopMain.Name = "TopMain"
+    TopMain.Parent = Main
+    TopMain.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    TopMain.Size = UDim2.new(0, 650, 0, 30)
+
+    MakeDraggable(TopMain, Main)
+
+    TopMainUICorner.Name = "TopMainUICorner"
+    TopMainUICorner.Parent = TopMain
+
+    TopMainLine.Name = "TopMainLine"
+    TopMainLine.Parent = TopMain
+    TopMainLine.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    TopMainLine.BorderSizePixel = 0
+    TopMainLine.Position = UDim2.new(0, 0, 0.833333313, 0)
+    TopMainLine.Size = UDim2.new(1, 0, 0, 5)
+
+    NameHub.Name = "NameHub"
+    NameHub.Parent = TopMain
+    NameHub.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    NameHub.BackgroundTransparency = 1.000
+    NameHub.Position = UDim2.new(0.0507692285, 0, 0, 0)
+    NameHub.Size = UDim2.new(0, 160, 0, 30)
+    NameHub.Font = Enum.Font.SourceSansSemibold
+    NameHub.RichText =  true
+    NameHub.Text = "<font color=\"rgb(".. math.floor(ColorII.R * 255) .. "," .. math.floor(ColorII.G * 255) .. ",".. math.floor(ColorII.B * 255) ..")\"> " .. name .. " </font> Hub | " .. game
+    NameHub.TextColor3 = Color3.fromRGB(255, 255, 255)
+    NameHub.TextSize = 25.000
+    NameHub.TextXAlignment = Enum.TextXAlignment.Left
+
+    Toggleui.Name = "Toggleui"
+    Toggleui.Parent = TopMain
+    Toggleui.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Toggleui.BackgroundTransparency = 1.000
+    Toggleui.Position = UDim2.new(0.803076923, 0, 0, 0)
+    Toggleui.Size = UDim2.new(0, 120, 0, 30)
+    Toggleui.Font = Enum.Font.SourceSansSemibold
+    Toggleui.Text = "[ Right Control ]"
+    Toggleui.TextColor3 = Color3.fromRGB(120, 120, 120)
+    Toggleui.TextSize = 20.000
+
+    HideTab.Name = "HideTab"
+    HideTab.Parent = TopMain
+    HideTab.BackgroundTransparency = 1.000
+    HideTab.Position = UDim2.new(0.0125000002, 0, 0.0670000017, 0)
+    HideTab.Size = UDim2.new(0, 25, 0, 25)
+    HideTab.ZIndex = 2
+    HideTab.Image = "rbxassetid://3926305904"
+    HideTab.ImageRectOffset = Vector2.new(484, 204)
+    HideTab.ImageRectSize = Vector2.new(36, 36)
+
+    SizeFullSection.Name = "SizeFullSection"
+    SizeFullSection.Parent = Main
+    SizeFullSection.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    SizeFullSection.BackgroundTransparency = 1.000
+    SizeFullSection.Position = UDim2.new(0.192307696, 0, 0.0933333337, 0)
+    SizeFullSection.Size = UDim2.new(0, 525, 0, 340)
+
+    local Taplist = Instance.new("Frame")
+    local TaplistUIListLayout = Instance.new("UIListLayout")
+    local TabSet = Instance.new("TextBox")
+    local MainUICorner = Instance.new("UICorner")
+    local BalckGrouitList = Instance.new("ScrollingFrame")
+    local BalckGrouitListUICorner = Instance.new("UICorner")
+    local BalckGrouitListUIListLayout = Instance.new("UIListLayout")
+
+    Taplist.Name = "Taplist"
+    Taplist.Parent = Main
+    Taplist.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Taplist.BackgroundTransparency = 1.000
+    Taplist.Position = UDim2.new(0, 0, 0.0799999982, 0)
+    Taplist.Size = UDim2.new(0, 130, 0, 345)
+
+    TaplistUIListLayout.Name = "TaplistUIListLayout"
+    TaplistUIListLayout.Parent = Taplist
+    TaplistUIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    TaplistUIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TaplistUIListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    TaplistUIListLayout.Padding = UDim.new(0, 5)
+
+    TabSet.Name = "TabSet"
+    TabSet.Parent = Taplist
+    TabSet.BackgroundColor3 = Color3.fromRGB(43, 43, 43)
+    TabSet.Size = UDim2.new(0, 120, 0, 25)
+    TabSet.Font = Enum.Font.SourceSansSemibold
+    TabSet.PlaceholderText = "Search : ..."
+    TabSet.Text = ""
+    TabSet.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TabSet.TextSize = 18.000
+
+    MainUICorner.Name = "MainUICorner"
+    MainUICorner.Parent = TabSet
+
+    BalckGrouitList.Name = "BalckGrouitList"
+    BalckGrouitList.Parent = Taplist
+    BalckGrouitList.Active = true
+    BalckGrouitList.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    BalckGrouitList.BackgroundTransparency = 1.000
+    BalckGrouitList.BorderColor3 = Color3.fromRGB(35, 35, 35)
+    BalckGrouitList.Position = UDim2.new(0, 0, 0.0799999982, 0)
+    BalckGrouitList.Size = UDim2.new(0, 120, 0, 305)
+    BalckGrouitList.ScrollBarThickness = 1
+
+    BalckGrouitListUICorner.Name = "BalckGrouitListUICorner"
+    BalckGrouitListUICorner.Parent = BalckGrouitList
+
+    BalckGrouitListUIListLayout.Name = "BalckGrouitListUIListLayout"
+    BalckGrouitListUIListLayout.Parent = BalckGrouitList
+    BalckGrouitListUIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    BalckGrouitListUIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    BalckGrouitListUIListLayout.Padding = UDim.new(0, 2)
+
+    BalckGrouitListUIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        BalckGrouitList.CanvasSize = UDim2.new(0,0,0,BalckGrouitListUIListLayout.AbsoluteContentSize.Y)
+    end)
+
+    function library:Notification(name)
+        local NotificationHold = Instance.new("TextButton")
+        local NotificationFrame = Instance.new("Frame")
+        local NotificationFrameUICorner = Instance.new("UICorner")
+        local OkayBtn = Instance.new("TextButton")
+        local OkayBtnCorner = Instance.new("UICorner")
+        local OkayBtnTitle = Instance.new("TextLabel")
+        local NotificationTitle = Instance.new("TextLabel")
+        local NotificationDesc = Instance.new("TextLabel")
+
+        NotificationHold.Name = "NotificationHold"
+        NotificationHold.Parent = Main
+        NotificationHold.BackgroundColor3 = Color3.fromRGB(125, 125, 125)
+        NotificationHold.BackgroundTransparency = 0.700
+        NotificationHold.BorderSizePixel = 0
+        NotificationHold.Size = UDim2.new(1, 0, 1, 0)
+        NotificationHold.AutoButtonColor = false
+        NotificationHold.Font = Enum.Font.SourceSans
+        NotificationHold.Text = ""
+        NotificationHold.TextColor3 = Color3.fromRGB(0, 0, 0)
+        NotificationHold.TextSize = 14.000
+        NotificationHold.ZIndex = 10
+
+        TweenService:Create(
+            NotificationHold,
+            TweenInfo.new(.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {BackgroundTransparency = 0.7}
+        ):Play()
+
+        wait(0.4)
+
+        NotificationFrame.Name = "NotificationFrame"
+        NotificationFrame.Parent = NotificationHold
+        NotificationFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+        NotificationFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        NotificationFrame.BorderSizePixel = 0
+        NotificationFrame.ClipsDescendants = true
+        NotificationFrame.Position = UDim2.new(0.5, 0, 0.498432577, 0)
+        NotificationFrame.Size = UDim2.new(0, 0, 0, 0)
+        NotificationFrame.ZIndex = 11
+        NotificationFrame:TweenSize(
+            UDim2.new(0, 305, 0, 283),
+            Enum.EasingDirection.Out,
+            Enum.EasingStyle.Quart,
+            .6,
+            true
+        )
+        NotificationFrameUICorner.Parent = NotificationFrame
+
+        OkayBtn.Name = "OkayBtn"
+        OkayBtn.Parent = NotificationFrame
+        OkayBtn.BackgroundColor3 = Color3.fromRGB(49, 49, 49)
+        OkayBtn.Position = UDim2.new(0.171131134, 0, 0.759717345, 0)
+        OkayBtn.Size = UDim2.new(0, 200, 0, 42)
+        OkayBtn.AutoButtonColor = false
+        OkayBtn.Font = Enum.Font.SourceSans
+        OkayBtn.Text = ""
+        OkayBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        OkayBtn.TextSize = 14.000
+        OkayBtn.ZIndex = 11
+
+        OkayBtnCorner.CornerRadius = UDim.new(0, 5)
+        OkayBtnCorner.Name = "OkayBtnCorner"
+        OkayBtnCorner.Parent = OkayBtn
+
+        OkayBtnTitle.Name = "OkayBtnTitle"
+        OkayBtnTitle.Parent = OkayBtn
+        OkayBtnTitle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        OkayBtnTitle.BackgroundTransparency = 1.000
+        OkayBtnTitle.Size = UDim2.new(0, 200, 0, 42)
+        OkayBtnTitle.Text = "Okey"
+        OkayBtnTitle.Font = Enum.Font.Gotham
+        OkayBtnTitle.TextColor3 = Color3.fromRGB(202, 202, 202)
+        OkayBtnTitle.TextSize = 24.000
+        OkayBtnTitle.ZIndex = 11
+
+        NotificationTitle.Name = "NotificationTitle"
+        NotificationTitle.Parent = NotificationFrame
+        NotificationTitle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        NotificationTitle.BackgroundTransparency = 1.000
+        NotificationTitle.Position = UDim2.new(0.0559394211, 0, 0.0652336925, 0)
+        NotificationTitle.Size = UDim2.new(0, 272, 0, 26)
+        NotificationTitle.ZIndex = 3
+        NotificationTitle.Font = Enum.Font.Gotham
+        NotificationTitle.Text = "-- Notification --"
+        NotificationTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+        NotificationTitle.TextSize = 24.000
+        NotificationTitle.ZIndex = 11
+
+        NotificationDesc.Name = "NotificationDesc"
+        NotificationDesc.Parent = NotificationFrame
+        NotificationDesc.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        NotificationDesc.BackgroundTransparency = 1.000
+        NotificationDesc.Position = UDim2.new(0.0670000017, 0, 0.218999997, 0)
+        NotificationDesc.Size = UDim2.new(0, 274, 0, 146)
+        NotificationDesc.Font = Enum.Font.Gotham
+        NotificationDesc.TextColor3 = Color3.fromRGB(255, 255, 255)
+        NotificationDesc.TextSize = 20.000
+        NotificationDesc.TextWrapped = true
+        NotificationDesc.TextXAlignment = Enum.TextXAlignment.Center
+        NotificationDesc.TextYAlignment = Enum.TextYAlignment.Top
+        NotificationDesc.ZIndex = 11
+        NotificationDesc.Text = name
+
+        OkayBtn.MouseEnter:Connect(
+            function()
+                TweenService:Create(
+                    OkayBtn,
+                    TweenInfo.new(.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                    {BackgroundColor3 = Color3.fromRGB(37, 37, 37)}
+                ):Play()
+            end
+        )
+
+        OkayBtn.MouseLeave:Connect(
+            function()
+                TweenService:Create(
+                OkayBtn,
+                TweenInfo.new(.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),{BackgroundColor3 = Color3.fromRGB(34, 34, 34)}):Play()
+            end
+        )
+
+        OkayBtn.MouseButton1Click:Connect(
+            function()
+                NotificationFrame:TweenSize(
+                    UDim2.new(0, 0, 0, 0),
+                    Enum.EasingDirection.Out,
+                    Enum.EasingStyle.Quart,
+                    .6,
+                    true
+                )
+                wait(0.4)
+                TweenService:Create(
+                NotificationHold,
+                TweenInfo.new(.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),{BackgroundTransparency = 1}):Play()
+                wait(.3)
+                NotificationHold:Destroy()
+            end
+        )
+    end
+
+    local Tabs = {}
+    function Tabs:Tab(text)
+        local Tab = Instance.new("TextButton")
+        local TabUICorner = Instance.new("UICorner")
+
+        Tab.Name = "Tab"
+        Tab.Parent = BalckGrouitList
+        Tab.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+        Tab.Position = UDim2.new(0, 0, 0.137704924, 0)
+        Tab.Size = UDim2.new(0, 115, 0, 25)
+        Tab.Font = Enum.Font.SourceSansSemibold
+        Tab.Text = text
+        Tab.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Tab.TextSize = 20.000
+        Tab.TextWrapped = true
+
+        TabUICorner.Name = "TabUICorner"
+        TabUICorner.Parent = Tab
+
+        local MainSection = Instance.new("ImageLabel")
+        local SectionBorder = Instance.new("ImageLabel")
+        local SectionTitle = Instance.new("TextLabel")
+        local SectionContent = Instance.new("ScrollingFrame")
+        local SectionContentLayout = Instance.new("UIListLayout")
+
+        MainSection.Name = "MainSection"
+        MainSection.Parent = SizeFullSection
+        MainSection.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        MainSection.BackgroundTransparency = 1
+        MainSection.Position = UDim2.new(0.0266666673, 0, 0.0343861282, 0)
+        MainSection.Size = UDim2.new(0, 503, 0, 0)
+        MainSection.ZIndex = 4
+        MainSection.Image = "rbxassetid://3570695787"
+        MainSection.ImageColor3 = Color3.fromRGB(40, 40, 40)
+        MainSection.ScaleType = Enum.ScaleType.Slice
+        MainSection.SliceCenter = Rect.new(100, 100, 100, 100)
+        MainSection.SliceScale = 0.050
+        MainSection.Visible = false
+
+        SectionBorder.Name = "SectionBorder"
+        SectionBorder.Parent = MainSection
+        SectionBorder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        SectionBorder.BackgroundTransparency = 1.000
+        SectionBorder.Position = UDim2.new(0, -1, 0, -1)
+        SectionBorder.Size = UDim2.new(1, 2, 1, 2)
+        SectionBorder.ZIndex = 3
+        SectionBorder.Image = "rbxassetid://3570695787"
+        SectionBorder.ScaleType = Enum.ScaleType.Slice
+        SectionBorder.SliceCenter = Rect.new(100, 100, 100, 100)
+        SectionBorder.SliceScale = 0.050
+
+        SectionTitle.Name = "SectionTitle"
+        SectionTitle.Parent = MainSection
+        SectionTitle.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        SectionTitle.BorderColor3 = Color3.fromRGB(255, 255, 255)
+        SectionTitle.BorderSizePixel = 0
+        SectionTitle.Position = UDim2.new(0.0470841937, -12, 0.00880593434, -12)
+        SectionTitle.ZIndex = 4
+        SectionTitle.Font = Enum.Font.SourceSansBold
+        SectionTitle.Text = "   "..text
+        SectionTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+        SectionTitle.TextSize = 14.000
+        SectionTitle.TextXAlignment = Enum.TextXAlignment.Left
+        SectionTitle.Size = UDim2.new(0, SectionTitle.TextBounds.X + 3, 0, 22)
+
+        SectionContent.Name = "SectionContent"
+        SectionContent.Parent = MainSection
+        SectionContent.Active = true
+        SectionContent.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        SectionContent.BackgroundTransparency = 1.000
+        SectionContent.BorderColor3 = Color3.fromRGB(27, 42, 53)
+        SectionContent.BorderSizePixel = 0
+        SectionContent.Position = UDim2.new(0, 0, 0.0350000001, 0)
+        SectionContent.Size = UDim2.new(1, 0, 0.964999974, 0)
+        SectionContent.ZIndex = 4
+        SectionContent.BottomImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
+        SectionContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+        SectionContent.ScrollBarThickness = 4
+        SectionContent.TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
+
+        function UpdateInputSearchText()
+            local InputText = string.upper(TabSet.Text)
+            for _,button in pairs(SectionContent:GetChildren())do
+                if button:IsA("TextButton") or button:IsA("Frame") or button:IsA("TextLabel") then
+                    if InputText == "" or string.find(string.upper(button.Name),InputText) ~= nil then
+                        button.Visible = true
+                    else
+                        button.Visible = false
+                    end
+                end
+            end
+        end
+        TabSet.Changed:Connect(UpdateInputSearchText)
+
+        SectionContentLayout.Name = "SectionContentLayout"
+        SectionContentLayout.Parent = SectionContent
+        SectionContentLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        SectionContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        SectionContentLayout.Padding = UDim.new(0, 5)
+
+        SectionContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+            SectionContent.CanvasSize = UDim2.new(0,0,0,SectionContentLayout.AbsoluteContentSize.Y + 10 )
+        end)
+
+        if fspage == nil then
+            fspage = true    
+            MainSection.Visible = true
+            TweenService:Create(MainSection, TweenInfo.new(1.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(0, 503, 0, 323)}):Play()
+            Tab.TextColor3 = ColorII
+        end
+
+        Tab.MouseButton1Click:Connect(function()
+            for i, v in next, SizeFullSection:GetChildren() do
+                if v.Name == "MainSection" then
+                    TweenService:Create(v, TweenInfo.new(1.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(0, 503, 0, 0)}):Play()
+                    v.Visible = false
+                end
+                MainSection.Visible = true
+                TweenService:Create(MainSection, TweenInfo.new(1.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(0, 503, 0, 323)}):Play()
+            end
+            for i, v in next, BalckGrouitList:GetChildren() do
+                if v.Name == "Tab" then
+                    TweenService:Create(v, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+                end
+                TweenService:Create(Tab, TweenInfo.new(1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {TextColor3 = ColorII}):Play()
+            end
+        end)
+
+        local TabElements = {}
+
+        function TabElements:Button(text,callback)
+            local NameButton = Instance.new("Frame")
+            local Button = Instance.new("TextButton")
+            local ButtonRounded = Instance.new("ImageLabel")
+            local UICorner = Instance.new("UICorner")
+            local UICorner_2 = Instance.new("UICorner")
+            local touch_app = Instance.new("ImageButton")
+
+            NameButton.Name = (text .. "Button")
+            NameButton.Parent = SectionContent
+            NameButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+            NameButton.Position = UDim2.new(0, 0, 0.122807018, 0)
+            NameButton.Size = UDim2.new(0, 475, 0, 30)
+            NameButton.ZIndex = 5
+
+            Button.Name = "Button"
+            Button.Parent = NameButton
+            Button.BackgroundColor3 = Color3.fromRGB(255, 75, 75)
+            Button.BackgroundTransparency = 1.000
+            Button.BorderSizePixel = 0
+            Button.ClipsDescendants = true
+            Button.Position = UDim2.new(-0.000727273524, 0, 0, 0)
+            Button.Size = UDim2.new(1, 0, 1, 0)
+            Button.Text = text
+            Button.ZIndex = 6
+            Button.Font = Enum.Font.SourceSansBold
+            Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Button.TextSize = 15.000
+
+            touch_app.Name = "touch_app"
+            touch_app.Parent = Button
+            touch_app.BackgroundTransparency = 1.000
+            touch_app.LayoutOrder = 8
+            touch_app.Position = UDim2.new(0.92315793, 0, 0.0666666478, 0)
+            touch_app.Size = UDim2.new(0, 25, 0, 25)
+            touch_app.ZIndex = 10
+            touch_app.Image = "rbxassetid://3926305904"
+            touch_app.ImageRectOffset = Vector2.new(84, 204)
+            touch_app.ImageRectSize = Vector2.new(36, 36)
+
+            ButtonRounded.Name = "ButtonRounded"
+            ButtonRounded.Parent = Button
+            ButtonRounded.Active = true
+            ButtonRounded.AnchorPoint = Vector2.new(0.5, 0.5)
+            ButtonRounded.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            ButtonRounded.BackgroundTransparency = 1.000
+            ButtonRounded.Position = UDim2.new(0.5, 0, 0.5, 0)
+            ButtonRounded.Selectable = true
+            ButtonRounded.Size = UDim2.new(1, 0, 1, 0)
+            ButtonRounded.ZIndex = 5
+            ButtonRounded.Image = "rbxassetid://3570695787"
+            ButtonRounded.ImageColor3 = Color3.fromRGB(255, 75, 75)
+            ButtonRounded.ImageTransparency = 1.000
+            ButtonRounded.ScaleType = Enum.ScaleType.Slice
+            ButtonRounded.SliceCenter = Rect.new(100, 100, 100, 100)
+            ButtonRounded.SliceScale = 0.050
+
+            UICorner.Parent = NameButton
+
+            UICorner_2.Parent = Button
+
+            local Lock = Instance.new("Frame")
+            local UICorner = Instance.new("UICorner")
+            local lock = Instance.new("ImageButton")
+
+            Lock.Name = "Lock"
+            Lock.Parent = Button
+            Lock.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+            Lock.BackgroundTransparency = 0.500
+            Lock.Size = UDim2.new(1, 0, 1, 0)
+            Lock.ZIndex = 10
+            Lock.Visible = false
+
+            UICorner.Parent = Lock
+
+            lock.Name = "lock"
+            lock.Parent = Lock
+            lock.AnchorPoint = Vector2.new(0.5, 0.5)
+            lock.BackgroundTransparency = 1.000
+            lock.Position = UDim2.new(0.525263131, -12, 0.899999976, -12)
+            lock.Size = UDim2.new(0, 0, 0, 0)
+            lock.ZIndex = 10
+            lock.Image = "rbxassetid://3926305904"
+            lock.ImageRectOffset = Vector2.new(4, 684)
+            lock.ImageRectSize = Vector2.new(36, 36)
+
+            Button.MouseButton1Down:Connect(function()
+                if Lock.Visible == true then
+                    for i = 1,3 do
+                        TweenService:Create(lock, TweenInfo.new(0.1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Rotation = 10}):Play()
+                        wait(.1)
+                        TweenService:Create(lock, TweenInfo.new(0.1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Rotation = -10}):Play()
+                        wait(.1)
+                    end
+                    TweenService:Create(lock, TweenInfo.new(0.1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Rotation = 0}):Play()
+                else
+                    RippleEffect(Button)
+                    callback(Button)
+                end
+            end)
+                                
+            Button.MouseButton1Up:Connect(function()
+                TweenService:Create(ButtonRounded, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+            end)
+                                                                        
+            Button.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseMovement then
+                    TweenService:Create(ButtonRounded, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {ImageColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+                end
+            end)
+
+            local funcbutton = {}
+
+            function funcbutton:Delete()
+                NameButton:Destroy()
+            end
+            function funcbutton:Lock()
+                Lock.Visible = true
+                TweenService:Create(lock, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(0, 25, 0, 25)}):Play()
+            end
+            function funcbutton:Unlock()
+                TweenService:Create(lock, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(0, 0, 0, 0)}):Play()
+                wait(.5)
+                Lock.Visible = false
+            end
+            return funcbutton
+        end
+
+        function TabElements:Toggle(text,stats,callback)
+
+            if stats == nil then
+                stats = false
+            end
+
+            local ToggleName = Instance.new("Frame")
+            local Title = Instance.new("TextLabel")
+            local Toggle = Instance.new("TextButton")
+            local CheckboxOutline = Instance.new("ImageLabel")
+            local UIGradient = Instance.new("UIGradient")
+            local CheckboxTicked = Instance.new("ImageLabel")
+            local UIGradient_2 = Instance.new("UIGradient")
+            local TickCover = Instance.new("Frame")
+            local UICorner = Instance.new("UICorner")
+
+            ToggleName.Name = (text .. "Toggle")
+            ToggleName.Parent = SectionContent
+            ToggleName.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+            ToggleName.Size = UDim2.new(0, 475, 0, 35)
+            ToggleName.ZIndex = 5
+
+            Title.Name = "Title"
+            Title.Parent = ToggleName
+            Title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            Title.BackgroundTransparency = 1.000
+            Title.BorderColor3 = Color3.fromRGB(27, 42, 53)
+            Title.Position = UDim2.new(0, 13, 0, 0)
+            Title.Size = UDim2.new(0, 149, 0, 35)
+            Title.ZIndex = 5
+            Title.Font = Enum.Font.SourceSansBold
+            Title.Text = text
+            Title.TextColor3 = Color3.fromRGB(185, 185, 185)
+            Title.TextSize = 15.000
+            Title.TextXAlignment = Enum.TextXAlignment.Left
+
+            Toggle.Name = "Toggle"
+            Toggle.Parent = ToggleName
+            Toggle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            Toggle.BackgroundTransparency = 1.000
+            Toggle.Size = UDim2.new(1, 0, 1, 0)
+            Toggle.ZIndex = 5
+            Toggle.AutoButtonColor = false
+            Toggle.Font = Enum.Font.SourceSansBold
+            Toggle.Text = ""
+            Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Toggle.TextSize = 14.000
+
+            CheckboxOutline.Name = "CheckboxOutline"
+            CheckboxOutline.Parent = Toggle
+            CheckboxOutline.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            CheckboxOutline.BackgroundTransparency = 1.000
+            CheckboxOutline.Position = UDim2.new(1, -35, 0.5, -12)
+            CheckboxOutline.Size = UDim2.new(0, 24, 0, 24)
+            CheckboxOutline.ZIndex = 5
+            CheckboxOutline.Image = "http://www.roblox.com/asset/?id=5416796047"
+
+            UIGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, ColorIIIII), ColorSequenceKeypoint.new(1.00, ColorIIIIII)}
+            UIGradient.Parent = CheckboxOutline
+
+            CheckboxTicked.Name = "CheckboxTicked"
+            CheckboxTicked.Parent = Toggle
+            CheckboxTicked.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            CheckboxTicked.BackgroundTransparency = 1.000
+            CheckboxTicked.Position = UDim2.new(1, -35, 0.5, -12)
+            CheckboxTicked.Size = UDim2.new(0, 24, 0, 24)
+            CheckboxTicked.ZIndex = 5
+            CheckboxTicked.Image = "http://www.roblox.com/asset/?id=5416796675"
+
+            UIGradient_2.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, ColorIIIII), ColorSequenceKeypoint.new(1.00, ColorIIIIII)}
+            UIGradient_2.Parent = CheckboxTicked
+
+            TickCover.Name = "TickCover"
+            TickCover.Parent = Toggle
+            TickCover.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+            TickCover.BorderSizePixel = 0
+            TickCover.Position = UDim2.new(1, -30, 0.5, -7)
+            TickCover.Size = UDim2.new(0, 14, 0, 14)
+            TickCover.ZIndex = 5
+
+            UICorner.Parent = ToggleName
+
+            local Lock = Instance.new("Frame")
+            local UICorner = Instance.new("UICorner")
+            local lock = Instance.new("ImageButton")
+
+            Lock.Name = "Lock"
+            Lock.Parent = Toggle
+            Lock.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+            Lock.BackgroundTransparency = 0.500
+            Lock.Size = UDim2.new(1, 0, 1, 0)
+            Lock.ZIndex = 10
+            Lock.Visible = false
+
+            UICorner.Parent = Lock
+
+            lock.Name = "lock"
+            lock.Parent = Lock
+            lock.AnchorPoint = Vector2.new(0.5, 0.5)
+            lock.BackgroundTransparency = 1.000
+            lock.Position = UDim2.new(0.525263131, -12, 0.899999976, -12)
+            lock.Size = UDim2.new(0, 0, 0, 0)
+            lock.ZIndex = 10
+            lock.Image = "rbxassetid://3926305904"
+            lock.ImageRectOffset = Vector2.new(4, 684)
+            lock.ImageRectSize = Vector2.new(36, 36)
+
+            local function SetState(state)
+                if state then
+                    TweenService:Create(Title, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+                    TweenService:Create(TickCover, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(1, -30, 0.5, -7), Size = UDim2.new(0, 0, 0, 0)}):Play()
+                elseif not state then
+                    TweenService:Create(Title, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {TextColor3 = Color3.fromRGB(185, 185, 185)}):Play()
+                    TweenService:Create(TickCover, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(1, -30, 0.5, -7), Size = UDim2.new(0, 14, 0, 14)}):Play()
+                end
+                -- callback(Toggled)
+            end
+                                    
+            if stats then
+                SetState(stats)
+                callback(stats)
+            end
+
+            Toggle.MouseEnter:Connect(
+                function()
+                    TweenService:Create(
+                        TickCover,
+                        TweenInfo.new(.2, Enum.EasingStyle.Quad),
+                        {BackgroundColor3 = Color3.fromRGB(55, 55, 55)}
+                    ):Play()
+                end
+            )
+
+            Toggle.MouseLeave:Connect(
+                function()
+                    TweenService:Create(
+                        TickCover,
+                        TweenInfo.new(.2, Enum.EasingStyle.Quad),
+                        {BackgroundColor3 = Color3.fromRGB(35, 35, 35)}
+                    ):Play()
+                end
+            )
+
+            Toggle.MouseButton1Down:Connect(function()
+                if Lock.Visible == true then
+                    for i = 1,3 do
+                        TweenService:Create(lock, TweenInfo.new(0.1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Rotation = 10}):Play()
+                        wait(.1)
+                        TweenService:Create(lock, TweenInfo.new(0.1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Rotation = -10}):Play()
+                        wait(.1)
+                    end
+                    TweenService:Create(lock, TweenInfo.new(0.1, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Rotation = 0}):Play()
+                else
+                    Toggled = not Toggled
+                    SetState(Toggled)
+                    callback(Toggled)
+                end
+            end)
+
+            local functoggle = {}
+
+            function functoggle:Lock()
+                Lock.Visible = true
+                TweenService:Create(lock, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(0, 25, 0, 25)}):Play()
+            end
+            function functoggle:Unlock()
+                TweenService:Create(lock, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(0, 0, 0, 0)}):Play()
+                wait(.5)
+                Lock.Visible = false
+            end
+            return functoggle
+        end
+
+        function TabElements:Slider(name, minimumvalue, maximumvalue, presetvalue, precisevalue, callback)
+            local SliderDragging = false
+            local StartingValue = presetvalue
+    
+            if StartingValue == nil then
+                StartingValue = presetvalue
+            end
+
+            local SliderName = Instance.new("Frame")
+            local Title = Instance.new("TextLabel")
+            local SliderBackground = Instance.new("ImageLabel")
+            local SliderIndicator = Instance.new("ImageLabel")
+            local UIGradient = Instance.new("UIGradient")
+            local CircleSelector = Instance.new("ImageLabel")
+            local UICorner = Instance.new("UICorner")
+            local SliderValue = Instance.new("ImageLabel")
+            local Value = Instance.new("TextBox")
+
+            SliderName.Name = (name.."Slider")
+            SliderName.Parent = SectionContent
+            SliderName.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+            SliderName.Position = UDim2.new(0.104166672, 0, 0.445901573, 0)
+            SliderName.Size = UDim2.new(0, 475, 0, 50)
+            SliderName.ZIndex = 5
+
+            Title.Name = "Title"
+            Title.Parent = SliderName
+            Title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            Title.BackgroundTransparency = 1.000
+            Title.BorderColor3 = Color3.fromRGB(27, 42, 53)
+            Title.Position = UDim2.new(0, 10, 0, 0)
+            Title.Size = UDim2.new(0, 121, 0, 35)
+            Title.ZIndex = 5
+            Title.Font = Enum.Font.SourceSansBold
+            Title.Text = name
+            Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Title.TextSize = 15.000
+            Title.TextXAlignment = Enum.TextXAlignment.Left
+
+            SliderBackground.Name = "SliderBackground"
+            SliderBackground.Parent = SliderName
+            SliderBackground.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+            SliderBackground.BackgroundTransparency = 1.000
+            SliderBackground.Position = UDim2.new(0.0199999996, 0, 0.699999988, 0)
+            SliderBackground.Size = UDim2.new(0, 450, 0, 4)
+            SliderBackground.ZIndex = 5
+            SliderBackground.Image = "rbxassetid://3570695787"
+            SliderBackground.ImageColor3 = Color3.fromRGB(55, 55, 55)
+            SliderBackground.ScaleType = Enum.ScaleType.Slice
+            SliderBackground.SliceCenter = Rect.new(100, 100, 100, 100)
+            SliderBackground.SliceScale = 0.150
+
+            SliderIndicator.Name = "SliderIndicator"
+            SliderIndicator.Parent = SliderBackground
+            SliderIndicator.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+            SliderIndicator.BackgroundTransparency = 1.000
+            SliderIndicator.Size = UDim2.new(((StartingValue or minimumvalue) - minimumvalue) / (maximumvalue - minimumvalue), 0, 1, 0)
+            SliderIndicator.ZIndex = 5
+            SliderIndicator.Image = "rbxassetid://3570695787"
+            SliderIndicator.ScaleType = Enum.ScaleType.Slice
+            SliderIndicator.SliceCenter = Rect.new(100, 100, 100, 100)
+            SliderIndicator.SliceScale = 0.150
+
+            UIGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, ColorIIIIIII), ColorSequenceKeypoint.new(1.00, ColorIIIIIIII)}
+            UIGradient.Parent = SliderIndicator
+
+            CircleSelector.Name = "CircleSelector"
+            CircleSelector.Parent = SliderIndicator
+            CircleSelector.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            CircleSelector.BackgroundTransparency = 1.000
+            CircleSelector.Position = UDim2.new(0.986565471, -7, 0.75, -7)
+            CircleSelector.Size = UDim2.new(0, 12, 0, 12)
+            CircleSelector.ZIndex = 5
+            CircleSelector.Image = "rbxassetid://3570695787"
+
+            UICorner.Parent = SliderName
+
+            SliderValue.Name = "SliderValue"
+            SliderValue.Parent = SliderName
+            SliderValue.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+            SliderValue.BackgroundTransparency = 1.000
+            SliderValue.Position = UDim2.new(0.899999976, -7, 0.400000006, -12)
+            SliderValue.Size = UDim2.new(0, 40, 0, 19)
+            SliderValue.ZIndex = 5
+            SliderValue.Image = "rbxassetid://3570695787"
+            SliderValue.ImageColor3 = Color3.fromRGB(65, 65, 65)
+            SliderValue.ScaleType = Enum.ScaleType.Slice
+            SliderValue.SliceCenter = Rect.new(100, 100, 100, 100)
+            SliderValue.SliceScale = 0.030
+
+            Value.Name = "Value"
+            Value.Parent = SliderValue
+            Value.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            Value.BackgroundTransparency = 1.000
+            Value.Size = UDim2.new(1, 0, 1, 0)
+            Value.ZIndex = 5
+            Value.Font = Enum.Font.SourceSansBold
+            Value.Text = tostring(StartingValue or precisevalue and tonumber(string.format("%.2f", StartingValue)))
+            Value.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Value.TextSize = 14.000
+
+            local function Sliding(input)
+                local SliderPosition = UDim2.new(math.clamp((input.Position.X - SliderBackground.AbsolutePosition.X) / SliderBackground.AbsoluteSize.X, 0, 1), 0, 1, 0)
+                TweenService:Create(SliderIndicator, TweenInfo.new(0.02, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = SliderPosition}):Play()
+    
+                local NonSliderPreciseValue = math.floor(((SliderPosition.X.Scale * maximumvalue) / maximumvalue) * (maximumvalue - minimumvalue) + minimumvalue)
+                local SliderPreciseValue = ((SliderPosition.X.Scale * maximumvalue) / maximumvalue) * (maximumvalue - minimumvalue) + minimumvalue
+    
+                local SlidingValue = (precisevalue and SliderPreciseValue or NonSliderPreciseValue)
+                SlidingValue = tonumber(string.format("%.2f", SlidingValue))
+    
+                Value.Text = tostring(SlidingValue)
+                callback(SlidingValue)
+            end
+local function ()
+functionname  =  "AUTO FRAM"
+spawn function = "AUTO FRAM"
+tab function = "click"
+
+("..:::MoonSec::..!*%&/+^,;.:_#$}=:+$,/=%/=.#}:=,;/$%%&;&!!+__#&./^,%_}%$+_#;^}&$!.$,%/,+}^!%:*/_,_};#+}_/:*^}/&*;&}!;}=}&_,+#^+*:=+,/&=*/}.!+=;$#.!,,+.&%=:#.:!/!}$_:;=^/;%,#+^%#}}$!.:,*,*#*;_^!&++^/}*,}:#:;&,/&}%_}##}=*!$$__!;+#!:*,&/^!!#:.:}$*^$,:#;*:..!,/%+*#};#*;:,!/#=;$}#/._&=*,*;$#_$;:+:$}:/,./}^/+#&*},}$_*;=^:*&!*}&:};_+.&_%},^/;*$=%!#}=#*:^%&=!#+.:_%:+;++:%+=.$!:$!,=,#*.^^_;*,.+,%;!%__:&;!+,&*=,^,/&**}^__=/#}:$,%+&%_=%=&/$!$}%_,=!#::.^}/=%,}};$._,!!$*:$.:%,:&.+*!_=}_!._#+$}:=;/+..}^//:%*}%+=%#!*$^=}}&#,;=^$*_*}},_&&*=$$%:,_=_.;,^$&*!;}}_/.^_.=_:&,;/$;:^_/!**}.;+/=%//%$*}%_%;*+;/!*,:!,,/#%*&$!!$%:$;.^%&;=:$}_&/^+!&*!/._./,.+$%.!+$}^$;!+}*=;&^#&$*%},%&=%$&:!*!}=_:;=^/:+,$//*#!!$^:.,+/=*$,_^/&+!:$=*_}:#_.;=;}*_%;,+#:+^=/;*+/+^+%=!/$.*:};_..*^,/.*==+_,.=,&#+:=,=+/%./_/%*^}%#_;,!+$*:^,__,;^^,&/*,$}_#.^+$_$:.,,/#%*&}&=*/}+.*;/^;;.:;,&/;*$&;&!!}$^..;!^%&_==}*&/*$}}#&.;_.:,,$^!;*.=^_/!*+^*%/=^$*:$;%+&!^$^=,/&**}^__$&#}:},;+}*}=##&/!!$}%_,#}$!.:;/%,%}=##}./!#$}_&;;#_.,,}##_#;^+_&!^;/%*/},#/.*^///*.},#.+#!_$^:_;!:!.&^%&==.}:_/:*^%//&,;*+*%^=_*&!$$=#%.;;.$&:&,;/$,++:&_*&$_,_%.=+#:.=$,_*,=^+%.!!}^:#;}+*#_._,!/+^#+;%_!*}%/&%*}$#%.,#&:%;%+^&&!+#=:/,;:.#..&^;&$+}/#*$=+#_:$,%+/*_!*#;%.*_}&_;;$#&:,,+*!%$=!#%.$,./}*==#;$^&!.$$_%;,__#*!;$__!;+#.:%&/}+:};&+;;*,//!*&};__.$/+/_!=}$#;*.!;$&:;,$.#.:^_&=}:}!_&./+}&/&/,#/}%&=;*.!,$}&#%+=^#_:!_$:=;!+;+.:;,&/;*$/+&#!}$,:,,}++!#!=$;,/&*}}#&.;$$:&;:^!%^=;$/:}/&/$%}!*.;_!,/+=}#!,_%^=/;%#%+$+.+/&!=}/_.$!$%.#;^%;%^=}#/._._}&_+;:+=.+,./,,&.*+$&%!,%.*%}$#...,./=*&}.}.&%!&$;:$#+_;.=^.&^_.;!++%:/$&.%!=%#%.^,!/*!$=!._,./:*}:+;&/=%/=.*!*%$##^^;^^&}!/$_/_%^=+#:.=}#_.;*+/&/!.:%+&*#=*#^}/$}__;.+:%.}#$&_+;}+%&/.,,%/**^}_*!!*#__;,.+__}.;^;&$*%%:%;!!$$:./!}#_:;=^/,#,$++*$$/$,:!##},_^;_^!,^,,/}%.=,$%=&!$$$_%;,:/:!,//!%.;+^*%=!/$.*^=,##.$&#!^$_,*+.%_!!$+}_#=.$%.!}$&:;,$.:.#^.&%*/}:_.;./#&}*&}$.};/^:/*.%,$/#%*=^*;!=}&_+;/^$#.:,,&/;*$/.&^!}$#_.;_+*%;==%=/_*.}}#&}!}*_^;,&&%^!:+_/=*+}:_==;$#:/&&+*&!_%#=.$;&+&%,=+$;:$!=}:_.;}^&;:,%/=%^!!#^&^*&}!_+;:#*.$,$!#*+!!##:/!,}&_*;^+_;^^:&$%&=&#_^*#&}.:$;%+,,}^^/^*,}._;;_,&&.!$$*#,.,^=&&!}}*+*%_=_$!:+#=.&;$^^!!$&,$/$%%=,*%*!};:};+_+$%.=,//.^^^,&#!$#%_^;=^+%^.=,!/+*:+^%+!^$&:&*#}$#%.,_/:^,,/=#!.$^:&=*/&#%&!,__:!;*+.%*+*^:&_*!}+!:=!$^:$=}}#_;;$^%:},_+&%*=}$!.^^$//}/;=+}&&!;+!*:};#!:!,$^__:;++:%=^&&;%*};__:%,/&#**=%_^&/!!$+::=^_+.+^./^*;}%_,;_}#$$:^,_+!,}^+*/*!},#*.!^+*/}##&.^}*=.#_:!,+.*;/^;;.:%,&/;*$&:%#=$$+:^%&=!#+.:_,_.;^/=&*!,$^:^/,=^#*.^^_:.;;+^%%!!$;_*;;+:%%%%,+&#**}^%%=*$%.=;%/.%,!*#;^,,++^%_=##*/*!_}!_+#$#;:;,%+;*;=^$!.:,!/#}*;=+_&!!+%:*_}+$%.&,+*=%%}_;,&!!*$^:_#:#;..^$};:.,}+&%:%#$%:,,#+%%^=_$!_,;}/=%/=.%*:&,;/$%%=,##:*,^/_%!=+#:.=,//.*==&#;.$,%/,%}=*#^.#,!.:*:}=#/:_^}/&*.}$}#.,^#/*&#}_#!.^^:/;*/}:_}:*^;/*+^},_#.*^=&_**}+_}$&^/&.!}}$_;;}^%&,/+}*_^;_^*&+!:$=_^_;+}&/!;$$_%;,+#/&/,$__*;++$%=!/$.#!;&+;%}!%}_:#;*+^&$!!$+:#,=:*%.=}$&#;,$+%%.=#$&:^.++!&,=:#=:;,.^!%&=;#$:%,,/#%&=^#=:!,+/:*==/#..=,&/;*$=/#,.#,*/^*#=!#^.:,!//*.}}#&.;^$/&*,}##*.;^_/!*+}$#,./^.&}$&=/_$.%^,.+,#%_%,=}$;:,,#%_!&$::$&;*&}%_,;#$/::,$/.%&=*+=&;!.$}_&}:$^:^^#$=_*;^+_&!!+$:.=#&*.%}!&$;:$_%+:%#!*$^*}=+_,*$==$/:.,}+&%;^$*%&,;!+*%^=_&&!$$_#*/^=.#}:&;:,}%%=:##:%,^/_%!=+$#.=,,/.%*=&#..$,;^+*#=/#^:!,!/^*:=!#/.$_%/&*;}$#,.,^$/**:%=#!.+^:/,*/}:_}:+..&$*+},_$.*^^&_*!=,_:.%^/&#!}}/_;;$;.&,!=}*_;;_^!&+*#*:_/;#+}&,!;$$_%..^#&*!:$__+;++:%=*^$.:};;+;&*!%$,:#;*+^%_!^$+::,=+/%.*!$&:;;/+%%_=#$*:^,=+!%+==#=#%,./=%&=;};:%;!/#%+=^#_:!;,.%*==}#.:!,&/;*$*%#,.#,_/^%+=!#$.:;=//*.=.#&.;^$/;*,}##*.^,;/!*$}:_=./^.&}*&=^_$.:^,&#**}^__.!,!&:*$}/__;};&&;!$}$_,.,^*&.!_}!_+;:^:&/!_$}_+;;+$&%!,},_*.*+_&&!+=::=;/^/%}!}$;_/;%+,%#!*}!:_;%++%#==$/:.,}+,%;!^$%_*,#+*%^=_$.:+,$/=%^=.}}:&,;+!%%!!##:;,^/=^.=+#=.=;%/.*==&$:#},%/#*#=%#^._,!/+%,}=#...^=/&*#}$#%_}^#/+*^}$#!.+^:&=/$}._}.&^.&$*%},_#.*^^&_*%},_:;=^/^.*&}&_;;$$%.:^$/$%%/}^!&+!:$=_/;.+}&&%^$$_%;,^}^#!^$$_!;,+:%=!/}_}.;&+_%$!/$,:#;*^;+#!!$.::;!+/%.=}$.}=,$+,%,=#$*:,,_+/%+=:}=:/,./}%+=;#$:%,,^#%*=^#_:!,+/:*==/}..},&/;%!=%#,.#,*^^*_=!#+._^=//*.}}=*.;,*/%*.}##%.^,*,:*+}:_=:!^.&=*&}._$.^:_&#**}^#,.!^^&:*&%;_.;}^&+%!$}&_,.%:^&^!_}!#=;:^!&/!:$}_,##+$&%!,=^_*;,+_&^&=$:_!;/^:%}!/$;:$;%+_,!!*$^:_.*++%_==$;}$,}+&%;*,$%:;,#+*+_=_$/:+,#/=%,=.#}$;,;+%%%=:##:&,^+*+:=+#}.=;:/.*==&#$.$,^;_*#=*#^_*,!/^*:=&!;..^}/&&%}$#&.,^#,^*^}=#!.,^:/%*/}.=&.&^$&$*+},_}.*^#,+*!}._:::^/&:!}};_;.*:^&,!#}*$*;_^*&+!:!%_/;$+}&&!;$$_%;,;^&*!:$__*;++:%=!/!!:};,+;%=!%$,:#;*;=%_!!$+:_,=+/%.==$&:;,$+%%,=#$*:^;%+!%+=:#=$;,./}%&=.#$:%,,/#%*=^#_:!,+/:*==/#..},&/;*$=%#,.#,*/^*_=!#+.:,%//*.}}#&.;^$/%*,}##*.^^_/!*+}:_=./^_&}*&};_$.%^,&#**},__.!^+&:!=}/_.");local f=(1892/0x2c)local o=91 local d=r;local n={}n={[(-0x59+((0xfa-144)+-#'warboy hates you'))]=function()local r,n,a,e=v(H,d,d+D);d=d+M;o=(o+(f*M))%x;return(((e+o-(f)+l*(M*_))%l)*((_*L)^_))+(((a+o-(f*_)+l*(_^D))%x)*(l*x))+(((n+o-(f*D)+L)%x)*l)+((r+o-(f*M)+L)%x);end,[(-#[[howtodumpscript]]+(0x7d+(-#"if syn then haxor alert end"+(-0x603/19))))]=function(e,e,e)local e=v(H,d,d);d=d+a;o=(o+(f))%x;return((e+o-(f)+L)%l);end,[(-80+0x53)]=function()local e,n=v(H,d,d+_);o=(o+(f*_))%x;d=d+_;return(((n+o-(f)+l*(_*M))%l)*x)+((e+o-(f*_)+x*(_^D))%l);end,[((141+-0x7a)+-#"howtodumpscript")]=function(o,e,n)if n then local e=(o/_^(e-r))%_^((n-a)-(e-r)+a);return e-e%r;else local e=_^(e-a);return(o%(e+e)>=e)and r or B;end;end,[(0x78-115)]=function()local e=n[(-#[[warboy hates you]]+(0xaa/10))]();local o=n[(101/0x65)]();local i=r;local d=(n[(130+-0x7e)](o,a,y+M)*(_^(y*_)))+e;local e=n[(356/0x59)](o,21,31);local n=((-r)^n[(-#"warboy hates you"+(100-0x50))](o,32));if(e==B)then if(d==g)then return n*B;else e=a;i=g;end;elseif(e==(l*(_^D))-a)then return(d==B)and(n*(a/g))or(n*(B/g));end;return Q(n,e-((x*(M))-r))*(i+(d/(_^X)));end,[(-#[[lego hax]]+(0x97-137))]=function(e,_,_)local _;if(not e)then e=n[(104+-0x67)]();if(e==B)then return'';end;end;_=q(H,d,d+e-r);d=d+e;local e=''for n=a,#_ do e=G(e,F((v(q(_,n,n))+o)%x))o=(o+f)%l end return e;end}local function L(...)return{...},A('#',...)end local function H()local f={};local i={};local e={};local u={f,i,nil,e};local o={}local k=(-#'Cock and ball tortue'+(0x91+-112))local e={[(0x49-72)]=(function(e)return not(#e==n[(0x46/35)]())end),[(-#"free bobux no skem"+(0x7d+(-0x8e+38)))]=(function(e)return n[(0xd2/42)]()end),[(0x66-102)]=(function(e)return n[(104-0x62)]()end),[(14/0x7)]=(function(e)local o=n[(97-0x5b)]()local n=''local e=1 for d=1,#o do e=(e+k)%x n=G(n,F((v(o:sub(d,d))+e)%l))end return n end)};u[3]=n[(-#[[Cock and ball tortue]]+(-0x69+127))]();local d=n[(-#"nicowashere"+(0x870/180))]()for d=1,d do local n=n[(-#'if syn then haxor alert end'+(0x9b+-126))]();local l;local e=e[n%((247-0x9a)+-#'testpsx dupe no scam legit 2022 free no virus')];o[d]=e and e({});end;for l=1,n[(19-0x12)]()do local e=n[(55-0x35)]();if(n[(0x72+-110)](e,r,a)==g)then local x=n[(-#[[testpsx dupe no scam legit 2022 free no virus]]+(0x8a-89))](e,_,D);local d=n[(-#"if syn then haxor alert end"+(0x6b-(0xf2-166)))](e,M,_+M);local e={n[(-0x25+40)](),n[(-0x6a+((0x13b-198)+-#'lego hax'))](),nil,nil};local i={[(-#'send nudes'+(50/((0x35+-21)+-#"if syn then haxor alert end")))]=function()e[s]=n[(115-(291-0xb3))]();e[m]=n[(130-0x7f)]();end,[(0x67/103)]=function()e[t]=n[(-#'nicowashere'+(672/0x38))]();end,[(0x3c/30)]=function()e[t]=n[(-#'Cock and ball tortue'+(-28+0x31))]()-(_^y)end,[((62-((10266/0xae)+-#[[lego hax]]))+-#'lego hax')]=function()e[t]=n[((-105+0x79)+-#'howtodumpscript')]()-(_^y)e[m]=n[((73-0x31)/8)]();end};i[x]();if(n[(0x48/18)](d,a,r)==a)then e[b]=o[e[w]]end if(n[(0x47-67)](d,_,_)==r)then e[h]=o[e[c]]end if(n[(103-(222-0x7b))](d,D,D)==a)then e[j]=o[e[p]]end f[l]=e;end end;for e=a,n[(0x51-80)]()do i[e-a]=H();end;return u;end;local function B(n,M,f)local x=n[_];local l=n[D];local F=n[r];return(function(...)local v=L local d=r;local o={};local n=l;local g={};local l=A('#',...)-a;local H={...};local y=x;local x=r x*=-1 local D=x;local L={};local x=F;for e=0,l do if(e>=n)then L[e-n]=H[e+a];else o[e]=H[e+r];end;end;local n=l-n+r local n;local l;while true do n=x[d];l=n[(0x62/98)];e=(4211900)while l<=(5760/0xa0)do e-= e e=(197948)while l<=(134-(0x7158/248))do e-= e e=(4259240)while l<=(0x6e8/221)do e-= e e=(16556725)while(((285-0xa3)-74)+-#'testpsx dupe no scam legit 2022 free no virus')>=l do e-= e e=(4838160)while(90/0x5a)>=l do e-= e e=(387600)while l>(-#"send nudes"+(-52+0x3e))do e-= e local e=n[b];local l=o[e]local r=o[e+2];if(r>0)then if(l>o[e+1])then d=n[t];else o[e+3]=l;end elseif(l<o[e+1])then d=n[t];else o[e+3]=l;end break end while 1140==(e)/((12920/0x26))do if not o[n[i]]then d=d+a;else d=n[s];end;break end;break;end while(e)/((-#[[nicowashere]]+(6459-0xcc1)))==1520 do e=(10975095)while(110+-0x6c)<l do e-= e local d=n[c];local e=o[d]for n=d+1,n[S]do e=e..o[n];end;o[n[k]]=e;break end while 3011==(e)/(((7371-(-#'free bobux no skem'+(0x1d39-3752)))+-#"howtodumpscript"))do local e=n[u]o[e]=o[e](N(o,e+r,n[s]))break end;break;end break;end while(e)/((0x1ff2-4115))==4075 do e=(7972800)while(0x8c/28)>=l do e-= e e=(4628988)while(93-0x59)<l do e-= e o[n[k]]=f[n[h]];break end while(e)/((4503-0x901))==2106 do M[n[t]]=o[n[U]];break end;break;end while(e)/((4889-0x9b9))==3322 do e=(186550)while l<=(-#"nicowashere"+(118-0x65))do e-= e if(o[n[i]]==n[P])then d=d+a;else d=n[h];end;break;end while 350==(e)/((-#"lego hax"+(104954/0xc2)))do e=(2033424)while l>((((0x7be8/244)+-#'free bobux no skem')+-87)+-#"free bobux no skem")do e-= e o[n[u]]=n[h];break end while 648==(e)/((-0x2c+3182))do d=n[c];break end;break;end break;end break;end break;end while(e)/((((210425+-0x21)/0x5b)+-#'if syn then haxor alert end'))==1864 do e=(6894967)while l<=(57-0x2d)do e-= e e=(4758456)while(-35+0x2d)>=l do e-= e e=(9030486)while(0x28-31)<l do e-= e o[n[i]]=o[n[t]][n[K]];break end while(e)/((((446439/0x93)+-0x67)+-#[[Cock and ball tortue]]))==3099 do local e=n[k];local d=o[n[c]];o[e+1]=d;o[e]=d[n[K]];break end;break;end while 3594==(e)/((135048/0x66))do e=(3595614)while(0x54+(-0x66+29))<l do e-= e o[n[U]]();break end while 3454==(e)/((2183-0x476))do local e={o,n};e[a][e[_][b]]=e[r][e[_][K]]+e[a][e[_][O]];break end;break;end break;end while 1919==(e)/(((0x15540a/194)-0xe1c))do e=(13771488)while((-91+0xb7)-0x4e)>=l do e-= e e=(5679856)while l>(-#[[warboy hates you]]+(142+-0x71))do e-= e local e={o,n};e[a][e[_][i]]=e[r][e[_][P]]+e[a][e[_][c]];break end while 1456==(e)/((0x1ee5-4008))do o[n[i]][o[n[c]]]=o[n[P]];break end;break;end while(e)/(((0x1b02-3467)+-#[[nicowashere]]))==4008 do e=(10951296)while l<=(0x69-90)do e-= e o[n[w]]=o[n[c]]-o[n[p]];break;end while(e)/((6120-0xc2e))==3648 do e=(5722290)while l>(-#'send nudes'+(0x75+-91))do e-= e o[n[k]]=o[n[c]][o[n[j]]];break end while 2170==(e)/((-#"Cock and ball tortue"+(0x86ed/13)))do local a;local l;local e;o[n[u]]=n[c];d=d+r;n=x[d];o[n[w]]=n[h];d=d+r;n=x[d];o[n[b]]=#o[n[c]];d=d+r;n=x[d];o[n[w]]=n[s];d=d+r;n=x[d];e=n[b];l=o[e]a=o[e+2];if(a>0)then if(l>o[e+1])then d=n[s];else o[e+3]=l;end elseif(l<o[e+1])then d=n[s];else o[e+3]=l;end break end;break;end break;end break;end break;end break;end while 68==(e)/(((718095/(603-0x166))+-#'Cock and ball tortue'))do e=(1272383)while l<=(0x12b0/184)do e-= e e=(8903694)while(0x85e/(12240/0x78))>=l do e-= e e=(9887652)while(-100+0x77)>=l do e-= e e=(1606602)while((0x89+-74)+-#"testpsx dupe no scam legit 2022 free no virus")<l do e-= e o[n[U]][o[n[t]]]=o[n[S]];break end while 1658==(e)/(((-0x61+1111)+-#'testpsx dupe no scam legit 2022 free no virus'))do o[n[U]]=o[n[s]][o[n[p]]];break end;break;end while(e)/(((0xc2898/216)+-83))==2742 do e=(9118182)while(-60+0x50)<l do e-= e local e=n[k]o[e]=o[e](o[e+a])break end while(e)/((-#[[send nudes]]+(0x1e85-3941)))==2361 do f[n[h]]=o[n[i]];d=d+r;n=x[d];o[n[u]]={};d=d+r;n=x[d];o[n[i]]={};d=d+r;n=x[d];f[n[t]]=o[n[U]];d=d+r;n=x[d];o[n[b]]=f[n[h]];d=d+r;n=x[d];if(o[n[u]]==n[P])then d=d+a;else d=n[c];end;break end;break;end break;end while(e)/(((0x16420/32)+-#[[lego hax]]))==3134 do e=(1102264)while(132-((0xed+-112)+-#"warboy hates you"))>=l do e-= e e=(2173468)while l>(-0x12+40)do e-= e local _=y[n[O]];local r;local e={};r=I({},{__index=function(o,n)local e=e[n];return e[1][e[2]];end,__newindex=function(d,n,o)local e=e[n]e[1][e[2]]=o;end;});for l=1,n[S]do d=d+a;local n=x[d];if n[(-#[[send nudes]]+(-116+0x7f))]==32 then e[l-1]={o,n[h]};else e[l-1]={M,n[t]};end;g[#g+1]=e;end;o[n[w]]=B(_,r,f);break end while 2068==(e)/((1162+-0x6f))do local e=n[i];local r=o[e+2];local l=o[e]+r;o[e]=l;if(r>0)then if(l<=o[e+1])then d=n[C];o[e+3]=l;end elseif(l>=o[e+1])then d=n[O];o[e+3]=l;end break end;break;end while 844==(e)/((0xcc10/40))do e=(517104)while(107-0x53)>=l do e-= e o[n[k]]=(n[c]~=0);d=d+a;break;end while(e)/((4209-0x86d))==252 do e=(1678727)while l>(0x627/63)do e-= e local e=n[b]o[e]=o[e](N(o,e+r,D))break end while 769==(e)/((0x831ba/246))do o[n[u]]=#o[n[t]];break end;break;end break;end break;end break;end while(e)/((68869/0x3d))==1127 do e=(669104)while l<=(-35+0x42)do e-= e e=(621992)while l<=((175-0x84)+-#[[howtodumpscript]])do e-= e e=(3893772)while l>(-#'howtodumpscript'+(0x8e+-100))do e-= e if(o[n[i]]==o[n[P]])then d=d+a;else d=n[O];end;break end while(e)/((4031-0x7eb))==1943 do o[n[u]]=o[n[t]];break end;break;end while(e)/((34104/0x54))==1532 do e=(2121816)while l<=(-#[[testpsx dupe no scam legit 2022 free no virus]]+(0xc3-121))do e-= e do return o[n[b]]end break;end while(e)/((0x51f-(-0x69+783)))==3352 do e=(7709264)while(0x564/46)<l do e-= e local e=n[b]local d,n=v(o[e](N(o,e+1,n[c])))D=n+e-1 local n=0;for e=e,D do n=n+r;o[e]=d[n];end;break end while 2192==(e)/((453693/0x81))do if not o[n[k]]then d=d+a;else d=n[c];end;break end;break;end break;end break;end while(e)/((0x38f1c/198))==568 do e=(3151205)while l<=(-76+0x6d)do e-= e e=(1884457)while(120+-0x58)<l do e-= e if(o[n[i]]~=o[n[K]])then d=d+a;else d=n[C];end;break end while(e)/((0x47d-628))==3617 do o[n[U]]=o[n[O]];break end;break;end while 2227==(e)/((0xb89-1538))do e=(4732420)while((-102+-0x10)+0x98)>=l do e-= e if(o[n[i]]==n[m])then d=d+a;else d=n[C];end;break;end while 2156==(e)/((406075/0xb9))do e=(11658056)while(-#'free bobux no skem'+(155-0x66))<l do e-= e o[n[b]]=(n[C]~=0);break end while 3727==(e)/((3231+-0x67))do o[n[b]]=(n[h]~=0);d=d+a;break end;break;end break;end break;end break;end break;end break;end while(e)/((((0x4e-95)+0x8ca)+-#'testpsx dupe no scam legit 2022 free no virus'))==1925 do e=(3461373)while(-#[[howtodumpscript]]+(0x3b10/(0x22f-343)))>=l do e-= e e=(1696440)while(0xa1-116)>=l do e-= e e=(4452084)while(4880/0x7a)>=l do e-= e e=(831150)while l<=(0x49a/31)do e-= e e=(7762159)while l>(7030/0xbe)do e-= e local e=n[i];local d=o[n[t]];o[e+1]=d;o[e]=d[n[m]];break end while(e)/((655827/0xd5))==2521 do local e=n[i]o[e](o[e+a])break end;break;end while 450==(e)/(((0xec4-1923)+-#"send nudes"))do e=(7898238)while l>(0x1ccb/189)do e-= e o[n[u]]=o[n[t]]%n[S];break end while(e)/((-#'howtodumpscript'+(0x1ebd-3988)))==2043 do do return o[n[w]]end break end;break;end break;end while(e)/(((192647/0x5b)+-#[[nicowashere]]))==2114 do e=(3580326)while(0xf18/92)>=l do e-= e e=(2498022)while l>(6068/0x94)do e-= e o[n[b]]=(n[c]~=0);break end while(e)/(((-115+0xac2)+-#"testpsx dupe no scam legit 2022 free no virus"))==963 do local e=n[k]o[e]=o[e](N(o,e+r,D))break end;break;end while 2658==(e)/((0x3449d/159))do e=(2116092)while l<=((0xc1-140)+-#'send nudes')do e-= e o[n[w]]();break;end while(e)/((0x94b+-33))==902 do e=(5111160)while l>(0x9d-113)do e-= e o[n[i]]={};break end while(e)/((234150/0xaf))==3820 do do return end;break end;break;end break;end break;end break;end while(e)/(((3303-0x690)+-#[[howtodumpscript]]))==1055 do e=(5702635)while(-#'Cock and ball tortue'+(-45+0x73))>=l do e-= e e=(4013100)while l<=(0x178/8)do e-= e e=(10691938)while(0x189e/137)<l do e-= e o[n[U]]=B(y[n[s]],nil,f);break end while 3994==(e)/((-0x47+2748))do local e=n[w]o[e](o[e+a])break end;break;end while 3185==(e)/((-25+(-#[[lego hax]]+(-61+0x54a))))do e=(627476)while l<=(-60+0x6c)do e-= e f[n[c]]=o[n[i]];break;end while(e)/((0x10e+-64))==3046 do e=(220115)while l>(-#[[nicowashere]]+((0xa83+-111)/0x2b))do e-= e local e=n[k]o[e]=o[e](N(o,e+r,n[O]))break end while 331==(e)/(((0x2a364/26)/10))do o[n[i]]=f[n[O]];break end;break;end break;end break;end while 1627==(e)/((7117-0xe1c))do e=(987308)while(-#'nicowashere'+(240-0xb1))>=l do e-= e e=(7857460)while l>(214-0xa3)do e-= e o[n[u]]=M[n[O]];d=d+r;n=x[d];o[n[w]]=#o[n[s]];d=d+r;n=x[d];M[n[O]]=o[n[i]];d=d+r;n=x[d];o[n[i]]=M[n[C]];d=d+r;n=x[d];o[n[i]]=#o[n[h]];d=d+r;n=x[d];M[n[s]]=o[n[b]];d=d+r;n=x[d];do return end;break end while 2572==(e)/((3071+-0x10))do o[n[u]]=o[n[c]][n[S]];break end;break;end while(e)/((-76+0x405))==1036 do e=(3572940)while((0xbb-114)+-#"Cock and ball tortue")>=l do e-= e o[n[w]]=o[n[s]]-o[n[m]];break;end while(e)/((1995-0x3f0))==3620 do e=(1254752)while l>((0x6b+-42)+-#[[nicowashere]])do e-= e local d=n[c];local e=o[d]for n=d+1,n[j]do e=e..o[n];end;o[n[w]]=e;break end while(e)/((0xb3f-1491))==904 do f[n[C]]=o[n[U]];break end;break;end break;end break;end break;end break;end while 1359==(e)/((0x7bbe5/199))do e=(5269626)while(15040/0xeb)>=l do e-= e e=(3990684)while(0xce-147)>=l do e-= e e=(10210610)while(173-0x74)>=l do e-= e e=(8086440)while(-#[[lego hax]]+(4032/((0x249c/132)+-#'lego hax')))<l do e-= e do return end;break end while 3412==(e)/((2471+-0x65))do local e=n[k]local d,n=v(o[e](N(o,e+1,n[s])))D=n+e-1 local n=0;for e=e,D do n=n+r;o[e]=d[n];end;break end;break;end while 2570==(e)/((0x1f54-4047))do e=(36868)while l>(220-0xa2)do e-= e o[n[k]]=n[h];break end while 1418==(e)/((178-0x98))do if(o[n[b]]~=o[n[S]])then d=d+a;else d=n[h];end;break end;break;end break;end while(e)/((4652-0x941))==1748 do e=(645861)while l<=(248-0xbb)do e-= e e=(6382256)while l>(0x6d+-49)do e-= e o[n[U]]=o[n[C]]%n[p];break end while(e)/(((98368/0x3a)+-#[[if syn then haxor alert end]]))==3824 do o[n[i]]=B(y[n[C]],nil,f);break end;break;end while(e)/((1465+-0x52))==467 do e=(3245094)while(0xdd-159)>=l do e-= e M[n[s]]=o[n[k]];break;end while(e)/((0x1e92-3935))==834 do e=(9354250)while(0x2ad2/174)<l do e-= e o[n[U]]=#o[n[C]];break end while 3550==(e)/((5368-0xaad))do o[n[U]]=M[n[t]];break end;break;end break;end break;end break;end while(e)/(((0x1079-2164)+-#'if syn then haxor alert end'))==2601 do e=(953817)while(-110+0xb3)>=l do e-= e e=(3370320)while(178-0x70)>=l do e-= e e=(2094532)while(-#'lego hax'+(7227/0x63))<l do e-= e local e=n[i]o[e]=o[e](o[e+a])break end while(e)/((((-#'warboy hates you'+(0x83448/129))+-0x7d)+-#[[testpsx dupe no scam legit 2022 free no virus]]))==526 do local l;local c,_;local a;local e;f[n[h]]=o[n[u]];d=d+r;n=x[d];o[n[i]]=f[n[O]];d=d+r;n=x[d];o[n[w]]=f[n[h]];d=d+r;n=x[d];e=n[b];a=o[n[s]];o[e+1]=a;o[e]=a[n[P]];d=d+r;n=x[d];o[n[u]]=n[h];d=d+r;n=x[d];e=n[k]c,_=v(o[e](N(o,e+1,n[h])))D=_+e-1 l=0;for e=e,D do l=l+r;o[e]=c[l];end;d=d+r;n=x[d];e=n[b]o[e]=o[e](N(o,e+r,D))d=d+r;n=x[d];o[n[u]]();d=d+r;n=x[d];do return end;break end;break;end while 1359==(e)/(((0x13b5-2555)+-#'send nudes'))do e=(435291)while(0xb4-113)>=l do e-= e local e=n[b];local l=o[e]local r=o[e+2];if(r>0)then if(l>o[e+1])then d=n[t];else o[e+3]=l;end elseif(l<o[e+1])then d=n[t];else o[e+3]=l;end break;end while(e)/(((200549/0xfb)-426))==1167 do e=(2512674)while l>((-76+(-#[[free bobux no skem]]+(-32+0xdd)))+-#'if syn then haxor alert end')do e-= e if(o[n[U]]==o[n[P]])then d=d+a;else d=n[O];end;break end while(e)/(((210515-0x19b47)/148))==3534 do d=n[c];break end;break;end break;end break;end while(e)/((636789/0xe9))==349 do e=(2298630)while l<=(0x3233/181)do e-= e e=(14764804)while(-#"send nudes"+(0x15e0/70))<l do e-= e local r=y[n[s]];local l;local e={};l=I({},{__index=function(o,n)local e=e[n];return e[1][e[2]];end,__newindex=function(d,n,o)local e=e[n]e[1][e[2]]=o;end;});for l=1,n[p]do d=d+a;local n=x[d];if n[(0x7b-122)]==32 then e[l-1]={o,n[c]};else e[l-1]={M,n[C]};end;g[#g+1]=e;end;o[n[k]]=B(r,l,f);break end while 3844==(e)/((0x1e79-3960))do o[n[i]]={};break end;break;end while(e)/((-0x60+4066))==579 do e=(852548)while l<=(0x3c30/214)do e-= e local M;local l;local b;local e;o[n[w]]=f[n[c]];d=d+r;n=x[d];o[n[w]]=o[n[O]][n[S]];d=d+r;n=x[d];e=n[i];b=o[n[h]];o[e+1]=b;o[e]=b[n[p]];d=d+r;n=x[d];o[n[u]]=o[n[O]];d=d+r;n=x[d];o[n[i]]=o[n[h]];d=d+r;n=x[d];e=n[i]o[e]=o[e](N(o,e+r,n[t]))d=d+r;n=x[d];e=n[u];b=o[n[C]];o[e+1]=b;o[e]=b[n[P]];d=d+r;n=x[d];e=n[k]o[e]=o[e](o[e+a])d=d+r;n=x[d];l={o,n};l[a][l[_][U]]=l[r][l[_][p]]+l[a][l[_][s]];d=d+r;n=x[d];o[n[w]]=o[n[C]]%n[K];d=d+r;n=x[d];e=n[w]o[e]=o[e](o[e+a])d=d+r;n=x[d];b=n[c];M=o[b]for e=b+1,n[m]do M=M..o[e];end;o[n[u]]=M;d=d+r;n=x[d];l={o,n};l[a][l[_][i]]=l[r][l[_][P]]+l[a][l[_][c]];d=d+r;n=x[d];o[n[U]]=o[n[c]]%n[S];break;end while(e)/(((1124-0x24e)+-#"send nudes"))==1627 do e=(3821992)while l>(-#"send nudes"+(19837/0xef))do e-= e o[n[w]]=M[n[O]];break end while 2972==(e)/((2626-0x53c))do local e=n[u];local r=o[e+2];local l=o[e]+r;o[e]=l;if(r>0)then if(l<=o[e+1])then d=n[c];o[e+3]=l;end elseif(l>=o[e+1])then d=n[t];o[e+3]=l;end break end;break;end break;end break;end break;end break;end break;end d+= a end;end);end;return B(H(),{},J())()end)_msec({[(-#'never gonna give you up never gonna let you down'+(0x1e3-271))]='\115\116'..(function(e)return(e and'((310-0xc3)+-#[[howtodumpscript]])')or'\114\105'or'\120\58'end)((0x57+-82)==((71-(-#"nicowashere"+(0x287a/157)))+-#"send nudes"))..'\110g',[(62582/0x53)]='\108\100'..(function(e)return(e and'(6400/0x40)')or'\101\120'or'\119\111'end)((-#[[lego hax]]+(88-((0xd1-114)+-#'Cock and ball tortue')))==(0x65-95))..'\112',[(0x1c3-237)]=(function(e)return(e and'(0xeb-135)')and'\98\121'or'\100\120'end)((-#"if syn then haxor alert end"+(0x57-55))==(0x34+-47))..'\116\101',[((424+-0x10)+-#[[nicowashere]])]='\99'..(function(e)return(e and'((259-(0x5610/153))+-#\'howtodumpscript\')')and'\90\19\157'or'\104\97'end)((-0x23+40)==((164-0x72)-0x2f))..'\114',[(1261-0x2b6)]='\116\97'..(function(e)return(e and'(0x8c+(30+-0x46))')and'\64\113'or'\98\108'end)((936/0x9c)==(175/0x23))..'\101',[(929-(0x3f3-538))]=(function(e)return(e and'(0x10a-166)')or'\115\117'or'\78\107'end)((0x2fd/255)==((3780/0x5a)+-#[[nicowashere]]))..'\98',[((891+-0x1c)+-#[[Cock and ball tortue]])]='\99\111'..(function(e)return(e and'(0xec-136)')and'\110\99'or'\110\105\103\97'end)(((0x4fc/22)+-#[[if syn then haxor alert end]])==((2788/0x44)+-#'send nudes'))..'\97\116',[(0x51c-666)]=(function(e,n)return(e and'(-#"if syn then haxor alert end"+(-0x55+212))')and'\48\159\158\188\10'or'\109\97'end)((-#[[send nudes]]+(-0x62+113))==(0x7c+(-71+-0x2f)))..'\116\104',[(-#[[Cock and ball tortue]]+(343068/0xfd))]=(function(e,n)return((((-#[[lego hax]]+(408-0x104))-127)+-#"lego hax")==(((0x198-266)+-#"testpsx dupe no scam legit 2022 free no virus")-0x5e)and'\48'..'\195'or e..((not'\20\95\69'and'\90'..'\180'or n)))or'\199\203\95'end),[(1928-0x3d4)]='\105\110'..(function(e,n)return(e and'(182+-0x52)')and'\90\115\138\115\15'or'\115\101'end)(((0x71-93)+-#'howtodumpscript')==(2728/0x58))..'\114\116',[(39331/0x25)]='\117\110'..(function(e,n)return(e and'(0xd4+-112)')or'\112\97'or'\20\38\154'end)((81-0x4c)==(-0x6e+141))..'\99\107',[(0x14708/70)]='\115\101'..(function(e)return(e and'(0x5d5c/239)')and'\110\112\99\104'or'\108\101'end)((1125/0xe1)==(-#[[if syn then haxor alert end]]+(133+-0x4b)))..'\99\116',[(0x9d9-1292)]='\116\111\110'..(function(e,n)return(e and'(-57+0x9d)')and'\117\109\98'or'\100\97\120\122'end)((600/0x78)==(-0x79+126))..'\101\114'},{[(236-0xa8)]=((getfenv))},((getfenv))()) end)()
+
+
+
